@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Sistema de Inventario{% endblock %}
+
+{% block content %}
+<h2>{{ title }}</h2>
+<p>Mostrando productos con cantidad igual o menor a <strong>{{ low_stock_threshold }}</strong> unidades. Productos agotados (cantidad 0) se muestran primero.</p>
+<a href="{{ url_for('main.reports_index') }}" class="btn btn-secondary mb-3">Volver al Menú de Reportes</a>
+
+{% if products %}
+<table class="table-responsive-sm">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>SKU</th>
+            <th>Categoría</th>
+            <th>Cantidad Actual</th>
+            <th>Precio Unit.</th>
+            <th>Proveedor</th>
+            <th>Últ. Actualización</th>
+            {% if current_user.is_authenticated and current_user.role == 'admin' %}
+            <th>Acciones Rápidas</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for product in products %}
+        {% set row_class = '' %}
+        {% if product.quantity == 0 %}
+            {% set row_class = 'table-danger critical-stock' %} {# Out of stock #}
+        {% elif product.quantity < low_stock_threshold %}
+            {% set row_class = 'table-warning low-stock' %}   {# Low stock #}
+        {% endif %}
+        <tr class="{{ row_class }}">
+            <td>
+                {{ product.name }}
+                {% if product.quantity == 0 %}
+                    <span class="badge badge-danger">Agotado</span>
+                {% elif product.quantity < low_stock_threshold %}
+                    <span class="badge badge-warning">Bajo Stock</span>
+                {% endif %}
+            </td>
+            <td>{{ product.sku or 'N/A' }}</td>
+            <td>{{ product.category or 'N/A' }}</td>
+            <td><strong>{{ product.quantity }}</strong></td>
+            <td>${{ "%.2f"|format(product.price) }}</td>
+            <td>{{ product.supplier or 'N/A' }}</td>
+            <td>{{ product.last_updated.strftime('%Y-%m-%d %H:%M') }}</td>
+            {% if current_user.is_authenticated and current_user.role == 'admin' %}
+            <td>
+                <a href="{{ url_for('main.add_stock', product_id=product.id) }}" class="btn btn-xs btn-success" title="Agregar Stock"><i class="fas fa-plus-circle"></i> Add</a>
+                <a href="{{ url_for('main.edit_product', product_id=product.id) }}" class="btn btn-xs btn-info" title="Editar Producto"><i class="fas fa-edit"></i> Edit</a>
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-success mt-3">
+    ¡Buenas noticias! No hay productos con bajo stock (igual o menor a {{ low_stock_threshold }} unidades) en este momento.
+</div>
+{% endif %}
+
+<div style="margin-top: 20px;">
+    <a href="{{ url_for('main.products') }}" class="btn btn-outline-primary">Ver Todos los Productos</a>
+</div>
+
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Sistema de Inventario{% endblock %}
+
+{% block content %}
+<h2>Dashboard</h2>
+<p>Bienvenido al sistema de gestión de inventario.</p>
+<p>Aquí podrás ver un resumen del estado actual del inventario, productos con bajo stock, etc.</p>
+{# Content for dashboard will be added here #}
+<h3>Inventario Actual (Resumen)</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Cantidad Disponible</th>
+            <th>Precio Unitario</th>
+        </tr>
+    </thead>
+    <tbody>
+        {# Example row - this will be populated dynamically #}
+        <tr>
+            <td>Producto Ejemplo 1</td>
+            <td>100</td>
+            <td>$10.00</td>
+        </tr>
+        <tr>
+            <td>Producto Ejemplo 2</td>
+            <td>50</td>
+            <td>$25.50</td>
+        </tr>
+    </tbody>
+</table>
+{% endblock %}

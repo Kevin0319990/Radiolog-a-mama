@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Sistema de Inventario{% endblock %}
+
+{% block content %}
+<h2>{{ title }}</h2>
+<p>Esta tabla muestra los movimientos recientes de inventario. Funcionalidad de filtrado y paginación será añadida.</p>
+<a href="{{ url_for('main.reports_index') }}" class="btn btn-secondary mb-3">Volver al Menú de Reportes</a>
+
+{# Placeholder for Filters - to be implemented later #}
+<div class="filters mb-3 p-3" style="background-color: #f8f9fa; border-radius: 5px;">
+    <h4>Filtros (Próximamente)</h4>
+    <form class="form-inline">
+        <div class="form-group mr-2">
+            <label for="product_filter" class="mr-2">Producto:</label>
+            <input type="text" class="form-control" id="product_filter" placeholder="Nombre o SKU">
+        </div>
+        <div class="form-group mr-2">
+            <label for="movement_type_filter" class="mr-2">Tipo Mov.:</label>
+            <select class="form-control" id="movement_type_filter">
+                <option value="">Todos</option>
+                <option value="initial_stock">Stock Inicial</option>
+                <option value="stock_entry">Entrada</option>
+                <option value="sale">Venta</option>
+                <option value="return">Devolución</option>
+                <option value="damage_loss">Daño/Pérdida</option>
+                <option value="adjustment_edit">Ajuste Edición</option>
+                <option value="adjustment_manual">Ajuste Manual</option>
+            </select>
+        </div>
+        <div class="form-group mr-2">
+            <label for="start_date_filter" class="mr-2">Desde:</label>
+            <input type="date" class="form-control" id="start_date_filter">
+        </div>
+        <div class="form-group mr-2">
+            <label for="end_date_filter" class="mr-2">Hasta:</label>
+            <input type="date" class="form-control" id="end_date_filter">
+        </div>
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+    </form>
+</div>
+
+
+{% if movements %}
+<table class="table-responsive-sm">
+    <thead>
+        <tr>
+            <th>Fecha y Hora</th>
+            <th>Producto</th>
+            <th>Tipo de Movimiento</th>
+            <th>Cambio Cant.</th>
+            <th>Usuario</th>
+            <th>Notas/Referencia</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for movement in movements %}
+        <tr>
+            <td>{{ movement.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            <td>
+                {% if movement.product %}
+                    {{ movement.product.name }} (SKU: {{ movement.product.sku or 'N/A' }})
+                {% else %}
+                    Producto no encontrado
+                {% endif %}
+            </td>
+            <td>{{ movement.movement_type | replace('_', ' ') | title }}</td>
+            <td>
+                {% if movement.quantity_change > 0 %}
+                    <span style="color: green;">+{{ movement.quantity_change }}</span>
+                {% else %}
+                    <span style="color: red;">{{ movement.quantity_change }}</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if movement.user %}
+                    {{ movement.user.username }}
+                {% else %}
+                    Usuario no encontrado
+                {% endif %}
+            </td>
+            <td>{{ movement.notes or 'N/A' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{# Placeholder for Pagination - to be implemented later #}
+{% else %}
+<div class="alert alert-info mt-3">
+    No se encontraron movimientos de inventario.
+</div>
+{% endif %}
+
+<div style="margin-top: 20px;">
+    {# <a href="#" class="btn btn-success"><i class="fas fa-file-csv"></i> Exportar a CSV (Próximamente)</a> #}
+    {# <a href="#" class="btn btn-danger"><i class="fas fa-file-pdf"></i> Exportar a PDF (Próximamente)</a> #}
+</div>
+
+{% endblock %}
