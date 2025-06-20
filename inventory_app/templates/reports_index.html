@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Menú de Reportes - Sistema de Inventario{% endblock %}
+
+{% block content %}
+<h2>Menú de Reportes</h2>
+<p>Selecciona un reporte de la lista para ver más detalles.</p>
+
+<div class="list-group">
+    <a href="{{ url_for('main.low_stock_report') }}" class="list-group-item list-group-item-action">
+        <i class="fas fa-exclamation-triangle"></i> Reporte de Productos con Bajo Stock
+    </a>
+    <a href="{{ url_for('main.inventory_movements_report') }}" class="list-group-item list-group-item-action">
+        <i class="fas fa-history"></i> Reporte de Movimientos de Inventario
+    </a>
+    {# Add more report links here as they are implemented #}
+    <!--
+    <a href="#" class="list-group-item list-group-item-action disabled" tabindex="-1" aria-disabled="true">
+        <i class="fas fa-chart-line"></i> Reporte de Ventas (Próximamente)
+    </a>
+    <a href="#" class="list-group-item list-group-item-action disabled" tabindex="-1" aria-disabled="true">
+        <i class="fas fa-boxes"></i> Reporte de Valor de Inventario (Próximamente)
+    </a>
+    -->
+</div>
+
+<div style="margin-top: 30px;">
+    <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">Volver al Dashboard</a>
+</div>
+
+{% endblock %}

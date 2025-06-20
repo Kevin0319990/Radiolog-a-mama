@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Sistema de Inventario{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2>{{ title }}</h2>
+    {% if product %}
+        <p><strong>Producto:</strong> {{ product.name }} (SKU: {{ product.sku or 'N/A' }})</p>
+        <p><strong>Cantidad Actual:</strong> {{ product.quantity }}</p>
+    {% endif %}
+
+    <form method="POST" action=""> {# Action URL will be set by Flask's url_for in the route #}
+        {{ form.hidden_tag() }} {# CSRF token #}
+        <fieldset>
+            {% if form.quantity_added %} {# Specific to AddStockForm #}
+            <div class="form-group">
+                {{ form.quantity_added.label(class="form-control-label") }}
+                {% if form.quantity_added.errors %}
+                    {{ form.quantity_added(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.quantity_added.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.quantity_added(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            {% elif form.quantity_removed %} {# Specific to RemoveStockForm #}
+            <div class="form-group">
+                {{ form.quantity_removed.label(class="form-control-label") }}
+                {% if form.quantity_removed.errors %}
+                    {{ form.quantity_removed(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.quantity_removed.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.quantity_removed(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.reason.label(class="form-control-label") }}
+                {% if form.reason.errors %}
+                    {{ form.reason(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.reason.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.reason(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {# Common fields like notes #}
+            <div class="form-group">
+                {{ form.notes.label(class="form-control-label") }}
+                {% if form.notes.errors %}
+                    {{ form.notes(class="form-control form-control-lg is-invalid", rows="3") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.notes.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.notes(class="form-control form-control-lg", rows="3") }}
+                {% endif %}
+            </div>
+        </fieldset>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-primary") }} {# Changed to btn-primary for main action #}
+            <a href="{{ url_for('main.products') }}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

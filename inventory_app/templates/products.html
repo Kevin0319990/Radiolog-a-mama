@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Productos - Sistema de Inventario{% endblock %}
+
+{% block content %}
+<h2>Gestión de Productos</h2>
+<p>Aquí podrás ver, agregar, editar y eliminar productos del inventario.</p>
+
+<div class="inventory-summary" style="margin-bottom: 20px; padding: 15px; background-color: #e9ecef; border-radius: 5px;">
+    <h4>Resumen del Inventario:</h4>
+    <p><strong>Total de Productos Únicos (Tipos):</strong> {{ total_unique_products }}</p>
+    <p><strong>Total de Unidades en Inventario:</strong> {{ total_units_in_inventory }}</p>
+    <p><em>(Umbral de bajo stock: {{ low_stock_threshold }} unidades)</em></p>
+</div>
+
+{% if current_user.is_authenticated and current_user.role == 'admin' %}
+<div style="margin-bottom: 20px;">
+    <a href="{{ url_for('main.add_product') }}" class="btn">Agregar Nuevo Producto</a>
+    {# We can add a link to a dedicated low stock report page here later #}
+    {# <a href="{{ url_for('main.low_stock_report') }}" class="btn btn-warning">Ver Productos Bajos de Stock</a> #}
+</div>
+{% endif %}
+
+{% if products.items %}
+<table class="table-responsive-sm"> {# Added class for better responsiveness #}
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>SKU</th>
+            <th>Categoría</th>
+            <th>Cantidad</th>
+            <th>Precio Unit.</th>
+            <th>Proveedor</th>
+            <th>Últ. Actualización</th>
+            {% if current_user.is_authenticated and current_user.role == 'admin' %}
+            <th>Acciones</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for product in products.items %}
+        {% set row_class = '' %}
+        {% if product.quantity == 0 %}
+            {% set row_class = 'table-danger critical-stock' %} {# Out of stock #}
+        {% elif product.quantity < low_stock_threshold %}
+            {% set row_class = 'table-warning low-stock' %}   {# Low stock #}
+        {% endif %}
+        <tr class="{{ row_class }}">
+            <td>
+                {{ product.name }}
+                {% if product.quantity == 0 %}
+                    <span class="badge badge-danger">Agotado</span>
+                {% elif product.quantity < low_stock_threshold %}
+                    <span class="badge badge-warning">Bajo Stock</span>
+                {% endif %}
+            </td>
+            <td>{{ product.sku or 'N/A' }}</td>
+            <td>{{ product.category or 'N/A' }}</td>
+            <td>{{ product.quantity }}</td>
+            <td>${{ "%.2f"|format(product.price) }}</td>
+            <td>{{ product.supplier or 'N/A' }}</td>
+            <td>{{ product.last_updated.strftime('%Y-%m-%d %H:%M') }}</td>
+            {% if current_user.is_authenticated and current_user.role == 'admin' %}
+            <td>
+                <a href="{{ url_for('main.edit_product', product_id=product.id) }}" class="btn btn-xs btn-info" title="Editar Producto"><i class="fas fa-edit"></i></a>
+                <form action="{{ url_for('main.delete_product', product_id=product.id) }}" method="POST" style="display:inline;" title="Eliminar Producto">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-xs btn-danger" onclick="return confirm('¿Estás seguro de que quieres eliminar este producto?');"><i class="fas fa-trash"></i></button>
+                </form>
+                <a href="{{ url_for('main.add_stock', product_id=product.id) }}" class="btn btn-xs btn-success" title="Agregar Stock"><i class="fas fa-plus-circle"></i></a>
+                <a href="{{ url_for('main.remove_stock', product_id=product.id) }}" class="btn btn-xs btn-warning" title="Remover Stock"><i class="fas fa-minus-circle"></i></a>
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{# Pagination Links #}
+<div class="pagination" style="margin-top: 20px; text-align: center;">
+    {% if products.has_prev %}
+        <a href="{{ url_for('main.products', page=products.prev_num) }}" class="btn btn-outline-secondary">&laquo; Anteriores</a>
+    {% endif %}
+    {% for page_num in products.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+        {% if page_num %}
+            {% if products.page == page_num %}
+                <a href="{{ url_for('main.products', page=page_num) }}" class="btn btn-primary">{{ page_num }}</a>
+            {% else %}
+                <a href="{{ url_for('main.products', page=page_num) }}" class="btn btn-outline-secondary">{{ page_num }}</a>
+            {% endif %}
+        {% else %}
+            ...
+        {% endif %}
+    {% endfor %}
+    {% if products.has_next %}
+        <a href="{{ url_for('main.products', page=products.next_num) }}" class="btn btn-outline-secondary">Siguientes &raquo;</a>
+    {% endif %}
+</div>
+<p style="text-align: center;">
+    Página {{ products.page }} de {{ products.pages }}. Total productos: {{ products.total }}
+</p>
+
+{% else %}
+<p>No hay productos en el inventario todavía.</p>
+{% if current_user.is_authenticated and current_user.role == 'admin' %}
+<p>Puedes <a href="{{ url_for('main.add_product') }}">agregar el primero</a>.</p>
+{% endif %}
+{% endif %}
+
+{% endblock %}
